@@ -25,14 +25,13 @@ def version_cmd() -> None:
 @app.command("check-config")
 def check_config() -> None:
     """Проверить настройки приложения без вывода секретов."""
-    setup_logging()
-
     try:
         settings = get_settings()
     except ValidationError:
-        logger.exception("Configuration validation failed")
         typer.echo("Configuration is invalid.", err=True)
         raise typer.Exit(code=1) from None
+
+    setup_logging(settings.log_level)
 
     typer.echo("Configuration is valid.")
     typer.echo(f"Data directory: {settings.data_dir}")

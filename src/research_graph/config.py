@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     request_timeout: float = Field(default=30.0, gt=0, le=300)
     max_concurrency: int = Field(default=5, ge=1, le=50)
 
+    def ensure_data_dir(self) -> Path:
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        return self.data_dir
+
 
 def get_settings() -> Settings:
     """Load application settings."""

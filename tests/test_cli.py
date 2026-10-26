@@ -1,3 +1,4 @@
+import pytest
 from typer.testing import CliRunner
 
 from research_graph.cli import app
@@ -21,7 +22,7 @@ def test_check_config_command() -> None:
 
 
 def test_check_config_does_not_reveal_token(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("RG_GITHUB_TOKEN", "secret-test-token")
 
