@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Настройки приложения."""
+    """Application settings."""
 
     model_config = SettingsConfigDict(
         env_prefix="RG_",
@@ -22,5 +22,5 @@ class Settings(BaseSettings):
 
 
 def get_settings() -> Settings:
-    """Загрузить настройки приложения."""
+    """Load application settings."""
     return Settings()
