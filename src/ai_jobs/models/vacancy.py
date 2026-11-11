@@ -144,81 +144,105 @@ class Vacancy(Base):
         nullable=True,
     )
 
-    company_size: Mapped[str] = mapped_column(String(50), nullable=False)
-    education_required: Mapped[str] = mapped_column(String(100), nullable=False)
+    company_size: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
+    education_required: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
     experience_level: Mapped[str] = mapped_column(String(100), nullable=False)
-    years_of_experience: Mapped[Decimal] = mapped_column(
+    years_of_experience: Mapped[Decimal | None] = mapped_column(
         Numeric(5, 2),
-        nullable=False,
+        nullable=True,
     )
 
     salary_usd: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    salary_min: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    salary_max: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    salary_category: Mapped[str] = mapped_column(String(50), nullable=False)
-
-    bonus_percentage: Mapped[Decimal] = mapped_column(
-        Numeric(5, 2),
-        nullable=False,
-    )
-    equity_offered: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    benefits_value_usd: Mapped[Decimal] = mapped_column(
+    salary_min: Mapped[Decimal | None] = mapped_column(
         Numeric(12, 2),
-        nullable=False,
+        nullable=True,
+    )
+    salary_max: Mapped[Decimal | None] = mapped_column(
+        Numeric(12, 2),
+        nullable=True,
+    )
+    salary_category: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
     )
 
-    job_openings: Mapped[int] = mapped_column(Integer, nullable=False)
-    competition_level_applicants: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
+    bonus_percentage: Mapped[Decimal | None] = mapped_column(
+        Numeric(5, 2),
+        nullable=True,
     )
-
-    hiring_difficulty: Mapped[Decimal] = mapped_column(
-        Numeric(4, 2),
-        nullable=False,
-    )
-    work_from_home_available: Mapped[bool] = mapped_column(
+    equity_offered: Mapped[bool | None] = mapped_column(
         Boolean,
-        nullable=False,
+        nullable=True,
     )
-    remote_work_percentage: Mapped[Decimal] = mapped_column(
+    benefits_value_usd: Mapped[Decimal | None] = mapped_column(
+        Numeric(12, 2),
+        nullable=True,
+    )
+
+    job_openings: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+    competition_level_applicants: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    hiring_difficulty: Mapped[Decimal | None] = mapped_column(
+        Numeric(4, 2),
+        nullable=True,
+    )
+    work_from_home_available: Mapped[bool | None] = mapped_column(
+        Boolean,
+        nullable=True,
+    )
+    remote_work_percentage: Mapped[Decimal | None] = mapped_column(
         Numeric(5, 2),
-        nullable=False,
+        nullable=True,
     )
 
-    job_satisfaction: Mapped[Decimal] = mapped_column(
+    job_satisfaction: Mapped[Decimal | None] = mapped_column(
         Numeric(4, 2),
-        nullable=False,
+        nullable=True,
     )
-    work_life_balance: Mapped[Decimal] = mapped_column(
+    work_life_balance: Mapped[Decimal | None] = mapped_column(
         Numeric(4, 2),
-        nullable=False,
+        nullable=True,
     )
 
-    ai_investment_company_millions: Mapped[Decimal] = mapped_column(
+    ai_investment_company_millions: Mapped[Decimal | None] = mapped_column(
         Numeric(14, 2),
-        nullable=False,
+        nullable=True,
     )
-    company_ai_maturity: Mapped[Decimal] = mapped_column(
+    company_ai_maturity: Mapped[Decimal | None] = mapped_column(
         Numeric(4, 2),
-        nullable=False,
+        nullable=True,
     )
 
-    job_growth_projection_percentage: Mapped[Decimal] = mapped_column(
+    job_growth_projection_percentage: Mapped[Decimal | None] = mapped_column(
         Numeric(5, 2),
-        nullable=False,
+        nullable=True,
     )
-    automation_risk_percentage: Mapped[Decimal] = mapped_column(
+    automation_risk_percentage: Mapped[Decimal | None] = mapped_column(
         Numeric(5, 2),
-        nullable=False,
+        nullable=True,
     )
-    gender_diversity_female_percentage: Mapped[Decimal] = mapped_column(
+    gender_diversity_female_percentage: Mapped[Decimal | None] = mapped_column(
         Numeric(5, 2),
-        nullable=False,
+        nullable=True,
     )
 
     posted_date: Mapped[date] = mapped_column(Date, nullable=False)
-    application_deadline: Mapped[date] = mapped_column(Date, nullable=False)
+    application_deadline: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+    )
     record_created: Mapped[date] = mapped_column(Date, nullable=False)
 
     data_source: Mapped[str] = mapped_column(String(150), nullable=False)

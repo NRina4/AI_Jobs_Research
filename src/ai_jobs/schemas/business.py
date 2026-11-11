@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ai_jobs.schemas.vacancy import VacancyRead
 
@@ -14,6 +14,8 @@ class SimilarVacancyRead(BaseModel):
 
 class CompareVacanciesRequest(BaseModel):
     """Request schema for comparing vacancies."""
+
+    model_config = ConfigDict(json_schema_extra={"example": {"vacancy_ids": [1, 2]}})
 
     vacancy_ids: list[int] = Field(min_length=2, max_length=5)
 

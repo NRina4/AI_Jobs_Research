@@ -94,22 +94,24 @@ def get_vacancy(db: Session, vacancy_id: int) -> Vacancy | None:
     return db.get(Vacancy, vacancy_id)
 
 
-def get_vacancies(
+def _build_vacancies_query(
     db: Session,
-    offset: int = 0,
-    limit: int = 20,
+    search: str | None = None,
     country_id: int | None = None,
     specialization_id: int | None = None,
     employment_type_id: int | None = None,
     experience_level: str | None = None,
     min_salary: Decimal | None = None,
     max_salary: Decimal | None = None,
-    sort_by: str = "id",
-    sort_order: str = "asc",
-) -> list[Vacancy]:
-    """Get vacancies with filtering, sorting and pagination."""
-
+):
+    """Build base vacancy query with filters (includes all records)."""
     statement = select(Vacancy)
+
+    if search:
+        search_pattern = f"%{search.strip()}%"
+        statement = statement.where(
+            Vacancy.job_title.has(JobTitle.name.ilike(search_pattern))
+        )
 
     if country_id is not None:
         statement = statement.where(Vacancy.country_id == country_id)
@@ -128,6 +130,60 @@ def get_vacancies(
 
     if max_salary is not None:
         statement = statement.where(Vacancy.salary_usd <= max_salary)
+
+    return statement
+
+
+def count_vacancies(
+    db: Session,
+    search: str | None = None,
+    country_id: int | None = None,
+    specialization_id: int | None = None,
+    employment_type_id: int | None = None,
+    experience_level: str | None = None,
+    min_salary: Decimal | None = None,
+    max_salary: Decimal | None = None,
+) -> int:
+    """Count vacancies matching the same filters as the list endpoint."""
+    statement = _build_vacancies_query(
+        db,
+        search=search,
+        country_id=country_id,
+        specialization_id=specialization_id,
+        employment_type_id=employment_type_id,
+        experience_level=experience_level,
+        min_salary=min_salary,
+        max_salary=max_salary,
+    ).with_only_columns(func.count(Vacancy.id))
+    return int(db.scalar(statement) or 0)
+
+
+def get_vacancies(
+    db: Session,
+    offset: int = 0,
+    limit: int = 20,
+    search: str | None = None,
+    country_id: int | None = None,
+    specialization_id: int | None = None,
+    employment_type_id: int | None = None,
+    experience_level: str | None = None,
+    min_salary: Decimal | None = None,
+    max_salary: Decimal | None = None,
+    sort_by: str = "posted_date",
+    sort_order: str = "desc",
+) -> list[Vacancy]:
+    """Get vacancies with filtering, sorting and pagination."""
+
+    statement = _build_vacancies_query(
+        db,
+        search=search,
+        country_id=country_id,
+        specialization_id=specialization_id,
+        employment_type_id=employment_type_id,
+        experience_level=experience_level,
+        min_salary=min_salary,
+        max_salary=max_salary,
+    )
 
     sort_columns = {
         "id": Vacancy.id,
