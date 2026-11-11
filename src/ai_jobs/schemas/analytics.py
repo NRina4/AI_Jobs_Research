@@ -32,3 +32,8 @@ class DemandByCountry(BaseModel):
 class DemandBySpecialization(BaseModel):
     specialization: str
     vacancies_count: int
+
+
+class DemandAnalytics(BaseModel):
+    by_country: list[DemandByCountry]
+    by_specialization: list[DemandBySpecialization]
