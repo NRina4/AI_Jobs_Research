@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ai_jobs.models import (
@@ -225,3 +225,88 @@ def delete_vacancy(db: Session, vacancy_id: int) -> bool:
     db.flush()
 
     return True
+
+
+def get_similar_vacancies(
+    db: Session,
+    vacancy_id: int,
+    limit: int = 10,
+) -> list[dict] | None:
+    """Find vacancies with the same specialization and shared skills."""
+
+    current_vacancy = db.get(Vacancy, vacancy_id)
+
+    if current_vacancy is None:
+        return None
+
+    current_skills = select(VacancySkill.skill_id).where(
+        VacancySkill.vacancy_id == vacancy_id
+    )
+
+    shared_skills_count = func.count(VacancySkill.skill_id)
+
+    statement = (
+        select(
+            Vacancy,
+            shared_skills_count.label("shared_skills_count"),
+        )
+        .join(VacancySkill, VacancySkill.vacancy_id == Vacancy.id)
+        .where(
+            Vacancy.specialization_id == current_vacancy.specialization_id,
+            Vacancy.id != vacancy_id,
+            VacancySkill.skill_id.in_(current_skills),
+        )
+        .group_by(Vacancy.id)
+        .order_by(shared_skills_count.desc(), Vacancy.id.asc())
+        .limit(limit)
+    )
+
+    results = db.execute(statement).all()
+
+    return [
+        {
+            "vacancy": vacancy,
+            "shared_skills_count": count,
+        }
+        for vacancy, count in results
+    ]
+
+
+def compare_vacancies(
+    db: Session,
+    vacancy_ids: list[int],
+) -> dict | None:
+    """Compare selected vacancies using their salary data."""
+
+    if not 2 <= len(vacancy_ids) <= 5:
+        raise ValueError("Between 2 and 5 vacancy IDs must be provided.")
+
+    if len(vacancy_ids) != len(set(vacancy_ids)):
+        raise ValueError("Vacancy IDs must be unique.")
+
+    statement = select(Vacancy).where(Vacancy.id.in_(vacancy_ids))
+    found_vacancies = db.scalars(statement).all()
+
+    vacancies_by_id = {vacancy.id: vacancy for vacancy in found_vacancies}
+
+    # Return None if at least one requested vacancy does not exist.
+    if len(vacancies_by_id) != len(vacancy_ids):
+        return None
+
+    # Preserve the order of IDs supplied in the request.
+    vacancies = [vacancies_by_id[vacancy_id] for vacancy_id in vacancy_ids]
+
+    salaries = [vacancy.salary_usd for vacancy in vacancies]
+
+    highest_paid = max(vacancies, key=lambda item: item.salary_usd)
+    lowest_paid = min(vacancies, key=lambda item: item.salary_usd)
+
+    average_salary = sum(salaries, Decimal(0)) / len(salaries)
+
+    return {
+        "vacancies": vacancies,
+        "average_salary": average_salary,
+        "salary_difference": max(salaries) - min(salaries),
+        "highest_paid_vacancy_id": highest_paid.id,
+        "lowest_paid_vacancy_id": lowest_paid.id,
+    }

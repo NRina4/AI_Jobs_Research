@@ -6,6 +6,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ai_jobs.db.session import get_db
+from ai_jobs.schemas.business import (
+    CompareVacanciesRequest,
+    CompareVacanciesResponse,
+    SimilarVacancyRead,
+)
 from ai_jobs.schemas.vacancy import (
     VacancyCreate,
     VacancyRead,
@@ -13,8 +18,10 @@ from ai_jobs.schemas.vacancy import (
 )
 from ai_jobs.services.exceptions import ReferenceNotFoundError
 from ai_jobs.services.vacancy import (
+    compare_vacancies,
     create_vacancy,
     delete_vacancy,
+    get_similar_vacancies,
     get_vacancies,
     get_vacancy,
     update_vacancy,
@@ -178,3 +185,53 @@ def delete_existing_vacancy(
     db.commit()
 
     return Response(status_code=204)
+
+
+@router.get(
+    "/{vacancy_id}/similar",
+    response_model=list[SimilarVacancyRead],
+)
+def read_similar_vacancies(
+    vacancy_id: int,
+    limit: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    """Find vacancies similar to the selected vacancy."""
+
+    vacancies = get_similar_vacancies(
+        db,
+        vacancy_id=vacancy_id,
+        limit=limit,
+    )
+
+    if vacancies is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Vacancy not found",
+        )
+
+    return vacancies
+
+
+@router.post(
+    "/compare",
+    response_model=CompareVacanciesResponse,
+)
+def compare_selected_vacancies(
+    request: CompareVacanciesRequest,
+    db: Session = Depends(get_db),
+):
+    """Compare two to five selected vacancies."""
+
+    result = compare_vacancies(
+        db,
+        vacancy_ids=request.vacancy_ids,
+    )
+
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail="One or more vacancies not found",
+        )
+
+    return result
