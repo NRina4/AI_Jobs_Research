@@ -12,10 +12,31 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-ai_jobs_db}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-ai_jobs_db}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  app:
+    build: .
+    container_name: ai_jobs_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_NAME: ${APP_NAME:-AI Jobs Research}
+      APP_ENV: ${APP_ENV:-production}
+      DEBUG: ${DEBUG:-false}
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/ai_jobs_db
+      DATASET_PATH: ${DATASET_PATH:-data/global_ai_jobs_2026.csv}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    command: >
+      sh -c "alembic upgrade head &&
+             python -m ai_jobs.db.seed &&
+             uvicorn ai_jobs.main:app --host 0.0.0.0 --port 8000"
 
 volumes:
   postgres_data:

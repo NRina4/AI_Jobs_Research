@@ -22,9 +22,12 @@ SessionLocal = sessionmaker(
 
 
 def get_db() -> Generator[Session, None, None]:
+    """Provide a transactional database session for request scope."""
     db = SessionLocal()
-
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
