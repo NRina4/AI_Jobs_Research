@@ -186,3 +186,41 @@ def test_filter_vacancies_with_invalid_sort_field_api(client):
     )
 
     assert response.status_code == 422
+
+
+def test_search_vacancies_by_job_title_api(client, reference_ids):
+    create_test_vacancy(client, reference_ids)
+
+    response = client.get(
+        "/api/v1/vacancies",
+        params={"search": "AI Engineer"},
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["job_title_id"] == reference_ids["job_title_id"]
+
+
+def test_search_vacancies_by_job_title_partial_match_api(client, reference_ids):
+    create_test_vacancy(client, reference_ids)
+
+    response = client.get(
+        "/api/v1/vacancies",
+        params={"search": "Engineer"},
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["job_title_id"] == reference_ids["job_title_id"]
+
+
+def test_search_vacancies_is_case_insensitive(client, reference_ids):
+    create_test_vacancy(client, reference_ids)
+
+    response = client.get(
+        "/api/v1/vacancies",
+        params={"search": "ai engineer"},
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) == 1

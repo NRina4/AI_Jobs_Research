@@ -45,3 +45,8 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "--cov=ai_jobs --cov-report=term-missing --cov-fail-under=70"
+
+[tool.coverage.run]
+source = ["ai_jobs"]
+omit = ["*/__main__.py"]
