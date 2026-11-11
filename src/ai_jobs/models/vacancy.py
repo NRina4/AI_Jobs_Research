@@ -161,24 +161,36 @@ class Vacancy(Base):
         nullable=False,
     )
 
-    hiring_difficulty: Mapped[int] = mapped_column(Integer, nullable=False)
-    remote_work_percentage: Mapped[Decimal] = mapped_column(
-        Numeric(5, 2),
+    hiring_difficulty: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2),
         nullable=False,
     )
     work_from_home_available: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
     )
+    remote_work_percentage: Mapped[Decimal] = mapped_column(
+        Numeric(5, 2),
+        nullable=False,
+    )
 
-    job_satisfaction: Mapped[int] = mapped_column(Integer, nullable=False)
-    work_life_balance: Mapped[int] = mapped_column(Integer, nullable=False)
+    job_satisfaction: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2),
+        nullable=False,
+    )
+    work_life_balance: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2),
+        nullable=False,
+    )
 
     ai_investment_company_millions: Mapped[Decimal] = mapped_column(
         Numeric(14, 2),
         nullable=False,
     )
-    company_ai_maturity: Mapped[int] = mapped_column(Integer, nullable=False)
+    company_ai_maturity: Mapped[Decimal] = mapped_column(
+        Numeric(4, 2),
+        nullable=False,
+    )
 
     job_growth_projection_percentage: Mapped[Decimal] = mapped_column(
         Numeric(5, 2),
