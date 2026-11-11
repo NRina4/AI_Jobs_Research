@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -11,6 +12,17 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from ai_jobs.models import (
+        Company,
+        Country,
+        EmploymentType,
+        Industry,
+        JobTitle,
+        Specialization,
+        VacancySkill,
+    )
 
 from ai_jobs.db.base import Base
 

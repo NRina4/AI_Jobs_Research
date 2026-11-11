@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -97,10 +98,56 @@ def get_vacancies(
     db: Session,
     offset: int = 0,
     limit: int = 20,
+    country_id: int | None = None,
+    specialization_id: int | None = None,
+    employment_type_id: int | None = None,
+    experience_level: str | None = None,
+    min_salary: Decimal | None = None,
+    max_salary: Decimal | None = None,
+    sort_by: str = "id",
+    sort_order: str = "asc",
 ) -> list[Vacancy]:
-    """Get a paginated list of vacancies."""
+    """Get vacancies with filtering, sorting and pagination."""
 
-    statement = select(Vacancy).order_by(Vacancy.id).offset(offset).limit(limit)
+    statement = select(Vacancy)
+
+    if country_id is not None:
+        statement = statement.where(Vacancy.country_id == country_id)
+
+    if specialization_id is not None:
+        statement = statement.where(Vacancy.specialization_id == specialization_id)
+
+    if employment_type_id is not None:
+        statement = statement.where(Vacancy.employment_type_id == employment_type_id)
+
+    if experience_level is not None:
+        statement = statement.where(Vacancy.experience_level == experience_level)
+
+    if min_salary is not None:
+        statement = statement.where(Vacancy.salary_usd >= min_salary)
+
+    if max_salary is not None:
+        statement = statement.where(Vacancy.salary_usd <= max_salary)
+
+    sort_columns = {
+        "id": Vacancy.id,
+        "salary_usd": Vacancy.salary_usd,
+        "posted_date": Vacancy.posted_date,
+        "years_of_experience": Vacancy.years_of_experience,
+        "job_satisfaction": Vacancy.job_satisfaction,
+    }
+
+    sort_column = sort_columns[sort_by]
+
+    if sort_order == "desc":
+        statement = statement.order_by(sort_column.desc())
+    else:
+        statement = statement.order_by(sort_column.asc())
+
+    if sort_by != "id":
+        statement = statement.order_by(Vacancy.id.asc())
+
+    statement = statement.offset(offset).limit(limit)
 
     return list(db.scalars(statement).all())
 

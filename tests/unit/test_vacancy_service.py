@@ -6,14 +6,6 @@ from pydantic import ValidationError
 from sqlalchemy import select
 
 from ai_jobs.models import (
-    Company,
-    Continent,
-    Country,
-    EmploymentType,
-    Industry,
-    JobTitle,
-    Skill,
-    Specialization,
     Vacancy,
     VacancySkill,
 )
@@ -26,49 +18,6 @@ from ai_jobs.services.vacancy import (
     get_vacancy,
     update_vacancy,
 )
-
-
-@pytest.fixture
-def reference_ids(db_session):
-    """Create reference records required for a vacancy."""
-
-    continent = Continent(name="Europe")
-    db_session.add(continent)
-    db_session.flush()
-
-    country = Country(name="Poland", continent_id=continent.id)
-    company = Company(name="Test Company")
-    job_title = JobTitle(name="AI Engineer")
-    specialization = Specialization(name="Machine Learning")
-    industry = Industry(name="Technology")
-    employment_type = EmploymentType(name="Full-time")
-    python_skill = Skill(name="Python")
-    sql_skill = Skill(name="SQL")
-
-    db_session.add_all(
-        [
-            country,
-            company,
-            job_title,
-            specialization,
-            industry,
-            employment_type,
-            python_skill,
-            sql_skill,
-        ]
-    )
-    db_session.flush()
-
-    return {
-        "company_id": company.id,
-        "country_id": country.id,
-        "job_title_id": job_title.id,
-        "specialization_id": specialization.id,
-        "industry_id": industry.id,
-        "employment_type_id": employment_type.id,
-        "python_skill_id": python_skill.id,
-        "sql_skill_id": sql_skill.id,
-    }
 
 
 def make_vacancy_data(reference_ids, **overrides):
