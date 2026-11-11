@@ -1,6 +1,13 @@
 from pydantic import BaseModel, ConfigDict
 
 
+class ReferenceItemRead(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CountryRead(BaseModel):
     id: int
     name: str
