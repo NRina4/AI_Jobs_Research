@@ -20,8 +20,13 @@ wheels/
 .coverage.*
 htmlcov/
 
-# Type checking
+# Linters and type checkers
+.ruff_cache/
 .mypy_cache/
+
+# Logs
+*.log
 
 # IDE
 .idea/
+.vscode/

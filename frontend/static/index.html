@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Система анализа рынка труда в сфере искусственного интеллекта">
+    <title>AI Jobs Research — Анализ рынка труда</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
+</head>
+<body>
+<header class="header">
+    <div class="container header-content">
+        <div class="logo">
+            <span class="logo-icon">AI</span>
+            <span>AI Jobs Research</span>
+        </div>
+        <span class="header-caption">Анализ рынка труда в сфере ИИ</span>
+    </div>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">ИНФОРМАЦИОННАЯ СИСТЕМА</p>
+            <h1>Рынок труда в сфере искусственного интеллекта</h1>
+            <p class="hero-description">
+                Изучайте вакансии, анализируйте зарплаты и сравнивайте
+                предложения работодателей.
+            </p>
+        </div>
+        <button class="button button-primary" id="add-vacancy-button">
+            + Добавить вакансию
+        </button>
+    </section>
+
+    <section class="stats" id="stats">
+        <article class="stat-card">
+            <span class="stat-label">Всего вакансий</span>
+            <strong id="total-vacancies">—</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Средняя зарплата</span>
+            <strong id="average-salary">—</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Стран</span>
+            <strong id="countries-count">—</strong>
+        </article>
+        <article class="stat-card">
+            <span class="stat-label">Специализаций</span>
+            <strong id="specializations-count">—</strong>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">БАЗА ДАННЫХ</p>
+                <h2>Вакансии</h2>
+            </div>
+            <div class="heading-actions">
+                <button class="button button-ghost" id="clear-selection-button" hidden>
+                    Сбросить выбор
+                </button>
+                <button class="button button-secondary" id="compare-button" disabled>
+                    Сравнить выбранные
+                </button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <input
+                    type="search"
+                    id="search-input"
+                    placeholder="Поиск по должности..."
+                    title="Поиск выполняется по названию должности"
+            >
+
+            <select id="specialization-filter">
+                <option value="">Все специализации</option>
+            </select>
+
+            <input
+                    type="number"
+                    id="salary-min-filter"
+                    placeholder="Зарплата от"
+                    min="0"
+            >
+
+            <input
+                    type="number"
+                    id="salary-max-filter"
+                    placeholder="Зарплата до"
+                    min="0"
+            >
+
+            <div class="filter-actions">
+                <button class="button button-secondary" id="filter-button">
+                    Найти
+                </button>
+                <button class="button button-ghost" id="reset-filters-button" type="button">
+                    Сбросить
+                </button>
+            </div>
+        </div>
+
+        <div id="vacancies-message" class="message" hidden></div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Должность</th>
+                    <th>Компания</th>
+                    <th>Страна</th>
+                    <th>Специализация</th>
+                    <th>Дата публикации</th>
+                    <th>Зарплата, USD</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody id="vacancies-table">
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        Загрузка вакансий...
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="button button-secondary" id="first-page" disabled title="В начало">
+                «
+            </button>
+            <button class="button button-secondary" id="previous-page" disabled>
+                Назад
+            </button>
+            <span id="page-info">Страница 1 из 1</span>
+            <button class="button button-secondary" id="next-page" disabled>
+                Далее
+            </button>
+            <button class="button button-secondary" id="last-page" disabled title="В конец">
+                »
+            </button>
+        </div>
+    </section>
+
+    <section class="panel form-panel" id="vacancy-form-panel" hidden>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">УПРАВЛЕНИЕ ДАННЫМИ</p>
+                <h2 id="form-title">Новая вакансия</h2>
+            </div>
+        </div>
+
+        <div id="form-message" class="message" hidden></div>
+
+        <form id="vacancy-form">
+            <p class="form-description">
+                Заполните основные сведения о вакансии. Поля со звёздочкой обязательны.
+            </p>
+
+            <div class="form-grid">
+                <label>
+                    Компания *
+                    <select name="company_id" id="company-select" required>
+                        <option value="">Выберите компанию</option>
+                    </select>
+                </label>
+
+                <label>
+                    Должность *
+                    <select name="job_title_id" id="job-title-select" required>
+                        <option value="">Выберите должность</option>
+                    </select>
+                </label>
+
+                <label>
+                    Страна *
+                    <select name="country_id" id="country-select" required>
+                        <option value="">Выберите страну</option>
+                    </select>
+                </label>
+
+                <label>
+                    Специализация *
+                    <select name="specialization_id" id="specialization-select" required>
+                        <option value="">Выберите специализацию</option>
+                    </select>
+                </label>
+
+                <label>
+                    Отрасль *
+                    <select name="industry_id" id="industry-select" required>
+                        <option value="">Выберите отрасль</option>
+                    </select>
+                </label>
+
+                <label>
+                    Тип занятости *
+                    <select name="employment_type_id" id="employment-type-select" required>
+                        <option value="">Выберите тип занятости</option>
+                    </select>
+                </label>
+
+                <label>
+                    Опыт работы *
+                    <select name="experience_level" required>
+                        <option value="">Выберите опыт</option>
+                        <option value="Без опыта">Без опыта</option>
+                        <option value="От 1 до 3 лет">От 1 до 3 лет</option>
+                        <option value="От 3 до 5 лет">От 3 до 5 лет</option>
+                        <option value="Более 5 лет">Более 5 лет</option>
+                    </select>
+                </label>
+
+                <label>
+                    Зарплата, USD *
+                    <input
+                            name="salary_usd"
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="Например, 150000"
+                            required
+                    >
+                </label>
+
+                <div class="full-width skill-field">
+                    <span class="field-label">Навыки (необязательно)</span>
+
+                    <button
+                            type="button"
+                            class="skill-picker-button"
+                            id="skill-picker-button"
+                            aria-expanded="false"
+                            aria-controls="skill-picker-list"
+                    >
+                        Выбрать навыки
+                        <span>▾</span>
+                    </button>
+
+                    <div class="skill-picker-list" id="skill-picker-list" hidden>
+                        <input
+                                type="search"
+                                id="skill-search"
+                                placeholder="Поиск навыка..."
+                                autocomplete="off"
+                        >
+                        <div id="skill-options"></div>
+                    </div>
+
+                    <div class="selected-skills" id="selected-skills">
+                        <span class="selected-skills-placeholder">
+                            Навыки пока не выбраны
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button
+                        type="submit"
+                        class="button button-primary"
+                        id="save-vacancy-button"
+                >
+                    Сохранить вакансию
+                </button>
+                <button
+                        type="button"
+                        class="button button-secondary"
+                        id="cancel-form-button"
+                >
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel" id="comparison-panel" hidden>
+        <div class="section-heading">
+            <h2>Результат сравнения</h2>
+            <button class="button button-secondary" id="close-comparison-button">
+                Закрыть
+            </button>
+        </div>
+        <p class="comparison-hint">Снимите галочку у вакансии, чтобы исключить её из сравнения. Статистика обновится автоматически.</p>
+        <div id="comparison-result"></div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        AI Jobs Research · Информационная система анализа рынка труда в сфере ИИ
+    </div>
+</footer>
+</body>
+</html>
