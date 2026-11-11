@@ -13,6 +13,7 @@ dependencies = [
     "fastapi>=0.162.4",
     "psycopg[binary]>=3.3.8",
     "pydantic-settings>=2.16.2",
+    "python-dotenv>=1.2.4",
     "sqlalchemy>=2.1.8",
     "uvicorn[standard]>=0.54.0",
 ]
