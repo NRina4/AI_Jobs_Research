@@ -2,6 +2,8 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from pydantic import ValidationError
+from sqlalchemy import select
 
 from ai_jobs.models import (
     Company,
@@ -15,9 +17,15 @@ from ai_jobs.models import (
     Vacancy,
     VacancySkill,
 )
-from ai_jobs.schemas.vacancy import VacancyCreate
+from ai_jobs.schemas.vacancy import VacancyCreate, VacancyUpdate
 from ai_jobs.services.exceptions import ReferenceNotFoundError
-from ai_jobs.services.vacancy import create_vacancy
+from ai_jobs.services.vacancy import (
+    create_vacancy,
+    delete_vacancy,
+    get_vacancies,
+    get_vacancy,
+    update_vacancy,
+)
 
 
 @pytest.fixture
@@ -176,3 +184,126 @@ def test_create_vacancy_with_missing_skill(
     assert error.value.field_name == "skill_id"
     assert error.value.object_id == 99999
     assert db_session.query(Vacancy).count() == 0
+
+
+def test_get_vacancy_by_id(db_session, reference_ids):
+    vacancy_data = make_vacancy_data(reference_ids)
+    created_vacancy = create_vacancy(db_session, vacancy_data)
+
+    vacancy = get_vacancy(db_session, created_vacancy.id)
+
+    assert vacancy is not None
+    assert vacancy.id == created_vacancy.id
+
+
+def test_get_nonexistent_vacancy(db_session):
+    vacancy = get_vacancy(db_session, 99999)
+
+    assert vacancy is None
+
+
+def test_get_vacancies_with_pagination(db_session, reference_ids):
+    for _ in range(5):
+        vacancy_data = make_vacancy_data(
+            reference_ids,
+            skill_ids=[],
+        )
+        create_vacancy(db_session, vacancy_data)
+
+    vacancies = get_vacancies(db_session, offset=1, limit=2)
+
+    assert len(vacancies) == 2
+    assert vacancies[0].id < vacancies[1].id
+
+
+def test_update_vacancy(db_session, reference_ids):
+    vacancy = create_vacancy(
+        db_session,
+        make_vacancy_data(reference_ids),
+    )
+
+    update_data = VacancyUpdate(
+        salary_usd=Decimal("110000.00"),
+    )
+
+    updated_vacancy = update_vacancy(
+        db_session,
+        vacancy.id,
+        update_data,
+    )
+
+    assert updated_vacancy is not None
+    assert updated_vacancy.salary_usd == Decimal("110000.00")
+    assert updated_vacancy.salary_min == Decimal("80000.00")
+
+
+def test_update_vacancy_rejects_invalid_salary(
+    db_session,
+    reference_ids,
+):
+    vacancy = create_vacancy(
+        db_session,
+        make_vacancy_data(reference_ids),
+    )
+
+    update_data = VacancyUpdate(
+        salary_min=Decimal("130000.00"),
+    )
+
+    with pytest.raises(ValidationError):
+        update_vacancy(db_session, vacancy.id, update_data)
+
+    assert vacancy.salary_min == Decimal("80000.00")
+
+
+def test_update_vacancy_replaces_skills(db_session, reference_ids):
+    vacancy = create_vacancy(
+        db_session,
+        make_vacancy_data(reference_ids),
+    )
+
+    update_data = VacancyUpdate(
+        skill_ids=[reference_ids["python_skill_id"]],
+    )
+
+    update_vacancy(db_session, vacancy.id, update_data)
+
+    db_session.expire(vacancy, ["vacancy_skills"])
+
+    assert [item.skill_id for item in vacancy.vacancy_skills] == [
+        reference_ids["python_skill_id"]
+    ]
+
+
+def test_update_nonexistent_vacancy(db_session):
+    update_data = VacancyUpdate(
+        salary_usd=Decimal("110000.00"),
+    )
+
+    result = update_vacancy(db_session, 99999, update_data)
+
+    assert result is None
+
+
+def test_delete_vacancy(db_session, reference_ids):
+    vacancy = create_vacancy(
+        db_session,
+        make_vacancy_data(reference_ids),
+    )
+
+    result = delete_vacancy(db_session, vacancy.id)
+
+    assert result is True
+    assert db_session.get(Vacancy, vacancy.id) is None
+    assert (
+        db_session.scalars(
+            select(VacancySkill).where(VacancySkill.vacancy_id == vacancy.id)
+        ).all()
+        == []
+    )
+
+
+def test_delete_nonexistent_vacancy(db_session):
+    result = delete_vacancy(db_session, 99999)
+
+    assert result is False
